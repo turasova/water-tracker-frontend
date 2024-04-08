@@ -9,14 +9,13 @@ import TodayWaterList from '../components/HomeWaterPageComponents/TodayWaterList
 import DailyNorma from '../components/HomePageComponents/DailyNorma/DailyNorma';
 import { useContext } from 'react';
 import { ModalContext } from '../context';
+import { AddWaterModal } from '../components/HomePageComponents/AddWaterModal/AddWaterModal';
 
-//заглушка для модалки
-const AddWaterModal = () => {
-  return <div> Тут колись буде модалка AddWaterModal</div>;
-};
+import { WaterRatioPanel } from '../components/HomePageComponents/WaterRatioPanel/WaterRationPanel';
 
 const HomeWaterPage = () => {
   const { openModal } = useContext(ModalContext);
+
   const handleAddWaterClick = () => {
     openModal(
       <>
@@ -29,12 +28,10 @@ const HomeWaterPage = () => {
     <HomePageContainer>
       <DailyNormaBoxWrapper>
         <DailyNorma></DailyNorma>
-        {/* <WaterRatioPanel andleAddWaterClick={handleAddWaterClick}></WaterRatioPanel> */}
+        <WaterRatioPanel handleAddWaterClick={handleAddWaterClick}></WaterRatioPanel>
       </DailyNormaBoxWrapper>
       <TodayAndCalendarWrapper>
-        <TodayWaterList
-          handleAddWaterClick={handleAddWaterClick}
-        ></TodayWaterList>
+        <TodayWaterList handleAddWaterClick={handleAddWaterClick}></TodayWaterList>
         <MonthStateTable></MonthStateTable>
       </TodayAndCalendarWrapper>
     </HomePageContainer>

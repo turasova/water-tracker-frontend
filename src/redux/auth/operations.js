@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-//axios.defaults.baseURL = 'https://smart-foxes-backend-watertracker.onrender.com/api';
+axios.defaults.baseURL = 'https://smart-foxes-backend-watertracker.onrender.com/api';
 
-axios.defaults.baseURL = 'http://localhost:3000/api';
+// axios.defaults.baseURL = 'http://localhost:3000/api';
 
 const token = {
   set(token) {
@@ -15,13 +15,17 @@ const token = {
 };
 
 export const signUp = createAsyncThunk('auth/signup', async (userData, thunkAPI) => {
-  console.log(userData);
   try {
     const response = await axios.post('/users/register', userData);
     token.set(response.data.token);
-    console.log(response);
+
     return response.data;
   } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    alert(message);
     return thunkAPI.rejectWithValue(error.message);
   }
 });
@@ -34,6 +38,11 @@ export const signIn = createAsyncThunk('auth/signin', async (userData, thunkAPI)
     token.set(response.data.token);
     return response.data;
   } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    alert(message);
     return thunkAPI.rejectWithValue(error.message);
   }
 });
@@ -73,7 +82,6 @@ export const refreshUser = createAsyncThunk('auth/refresh', async (_, thunkAPI) 
   const state = thunkAPI.getState();
   const persistedToken = state.auth.token;
   if (!persistedToken) {
-    console.log('UNAUTHORIZED');
     return thunkAPI.rejectWithValue('Unable to fetch user');
   }
   try {
@@ -107,19 +115,16 @@ export const updateUserInfo = createAsyncThunk('auth/info', async (formData, thu
   }
 });
 
-//!Второй вариант саки для аватарки
+export const updateWaterRate = createAsyncThunk(
+  'water-rate/editDailyNorma',
+  async (data, thunkApi) => {
+    const waterRate = data.toString() * 1000;
+    try {
+      const response = await axios.patch(`/water-rate`, { waterRate });
 
-// export const avatar = createAsyncThunk(
-//   'auth/avatar',
-//   async (data, thunkAPI) => {
-//     try {
-//       const formData = new FormData();
-//       formData.append('avatar', data); // Предполагается, что 'data' - это файл аватарки
-//       const response = await axios.patch('/users/login', formData);
-//       console.log(response);
-//       return response.data;
-//     } catch (error) {
-//       return thunkAPI.rejectWithValue(error.message);
-//     }
-//   }
-// );
+      return response.data.waterRate;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.message);
+    }
+  }
+);

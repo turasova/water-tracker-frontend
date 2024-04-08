@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CalculateHead,
   ContainerGender,
@@ -26,18 +26,20 @@ import {
   CloseIcon,
 } from './DailyNormaModal.styled';
 import { useDispatch } from 'react-redux';
-import { updateWaterRate } from '../../../redux/waters/operations';
+import { updateWaterRate } from '../../../redux/auth/operations.js';
+
+import useAuth from '../../../hooks/useAuth.js';
 
 export const DailyNormaModal = ({ onClose }) => {
   const dispatch = useDispatch();
-  // const {female, male} = useSelector(gender);
+  const { user } = useAuth();
   const woman = { weight: Number(0.03), activity: Number(0.04) };
   const man = { weight: Number(0.04), activity: Number(0.06) };
   const [genderOption, setGenderOption] = useState(woman);
   const [userWeight, setUserWeight] = useState('');
-  const [dailyNorma, setDailyNorma] = useState(''); //waterRate**selector
   const [userSportsActivite, setUserSportsActivite] = useState('');
   const [userWaterPredict, setUserWaterPredict] = useState('');
+  const waterRate = user.waterRate;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -56,12 +58,12 @@ export const DailyNormaModal = ({ onClose }) => {
     const result = (
       userWeight * genderOption.weight +
       (userSportsActivite / 60) * genderOption.activity
-    ).toFixed(2);
-    setDailyNorma(result);
+    ).toFixed(1);
+    return result;
   }, [genderOption, userWeight, userSportsActivite]);
 
-  useEffect(() => {
-    calculateWaterIntake();
+  const dailyNorma = useMemo(() => {
+    return calculateWaterIntake();
   }, [calculateWaterIntake]);
 
   const handleWaterPredict = (e) => {
@@ -77,27 +79,30 @@ export const DailyNormaModal = ({ onClose }) => {
 
   const handleSave = (e) => {
     e.preventDefault();
+
     const parseDailyNorma = parseFloat(dailyNorma);
-    const isValid =
-      (userSportsActivite > 0 && userWeight > 0) || userWaterPredict > 0;
+
+    const isValid = (userSportsActivite > 0 && userWeight > 0) || userWaterPredict > 0;
+
     if (!isValid) {
       alert('Fill all fields');
       return;
     }
-    if (isNaN(parseDailyNorma) || parseDailyNorma <= 0) {
-      alert('Enter a valid intake goal');
-    }
-    dispatch(
-      updateWaterRate(userWaterPredict ? userWaterPredict : parseDailyNorma)
-    ).then((data) => {
-      if (!data.error) {
-        onClose(),
-          setUserWeight(''),
-          setUserSportsActivite(''),
-          setUserWaterPredict('');
+    // if (!isNaN(parseDailyNorma) || parseDailyNorma <= 0) {
+    //   alert('Enter a valid intake goal');
+    // }
+    dispatch(updateWaterRate(userWaterPredict ? userWaterPredict : parseDailyNorma)).then(
+      (data) => {
+        if (!data.error) {
+          onClose(), setUserWeight(''), setUserSportsActivite(''), setUserWaterPredict('');
+        } else {
+          console.log(data.error);
+          alert('Something went wrong ');
+        }
       }
-    });
+    );
   };
+
   return (
     <ModalContainer>
       <Modal>
@@ -108,9 +113,9 @@ export const DailyNormaModal = ({ onClose }) => {
               <path
                 d="M6 18L18 6M6 6L18 18"
                 stroke="#407BFF"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </CloseIcon>
           </CloseModalButton>
@@ -125,10 +130,9 @@ export const DailyNormaModal = ({ onClose }) => {
         </ContainerGender>
         <InfoContainer>
           <InfoPargh>
-            <InfoSpan>*</InfoSpan> V is the volume of the water norm in liters
-            per day, M is your body weight, T is the time of active sports, or
-            another type of activity commensurate in terms of loads (in the
-            absence of these, you must set 0)
+            <InfoSpan>*</InfoSpan> V is the volume of the water norm in liters per day, M is your
+            body weight, T is the time of active sports, or another type of activity commensurate in
+            terms of loads (in the absence of these, you must set 0)
           </InfoPargh>
         </InfoContainer>
         <CalculateForm>
@@ -141,6 +145,7 @@ export const DailyNormaModal = ({ onClose }) => {
                   name="gender"
                   value="woman"
                   onChange={() => setGenderOption(woman)}
+                  checked={user.gender === 'famale'}
                 />
                 <GenderPargh>For woman</GenderPargh>
               </GenderLabel>
@@ -150,6 +155,7 @@ export const DailyNormaModal = ({ onClose }) => {
                   name="gender"
                   value="man"
                   onChange={() => setGenderOption(man)}
+                  checked={user.gender === 'male'}
                 />
                 <GenderPargh>For man</GenderPargh>
               </GenderLabel>
@@ -168,8 +174,8 @@ export const DailyNormaModal = ({ onClose }) => {
             </UserLabel>
             <UserLabel>
               <GenderPargh>
-                The time of active participation in sports or other activities
-                with a high physical. load in hours:
+                The time of active participation in sports or other activities with a high physical.
+                load in hours:
               </GenderPargh>
               <UserInputs
                 type="number"
@@ -184,14 +190,12 @@ export const DailyNormaModal = ({ onClose }) => {
               The required amount of water in liters per day:
               <WaterAmountSpan>
                 {' '}
-                {dailyNorma ? dailyNorma : 2} L
+                {dailyNorma ? dailyNorma : (waterRate / 1000).toFixed(1)} L
               </WaterAmountSpan>
             </GenderPargh>
           </UserInputsContainer>
           <UserWaterPredict>
-            <CalculateHead>
-              Write down how much water you will drink:
-            </CalculateHead>
+            <CalculateHead>Write down how much water you will drink:</CalculateHead>
             <UserInputs
               type="number"
               name="userWaterPredict"

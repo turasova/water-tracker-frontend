@@ -3,7 +3,7 @@ import * as API from './operations';
 
 const initialState = {
   waterDayList: [], //portionList:[]
-  waterMounthList: [],
+  waterMonthList: [],
   waterRate: null,
   isLoading: false,
   error: false,
@@ -46,12 +46,7 @@ const waterSlice = createSlice({
         });
       })
       .addCase(API.updatePortion.rejected, handleRejected)
-      .addCase(API.updateWaterRate.pending, handlePending)
-      .addCase(API.updateWaterRate.fulfilled, (state, action) => {
-        state.waterRate = action.payload;
-        state.isLoading = false;
-      })
-      .addCase(API.updateWaterRate.rejected, handleRejected)
+
       .addCase(API.portionsPerDay.pending, handlePending)
       .addCase(API.portionsPerDay.fulfilled, (state, action) => {
         // console.log(action.payload.portions);
@@ -61,12 +56,16 @@ const waterSlice = createSlice({
       .addCase(API.portionsPerDay.rejected, handleRejected)
       .addCase(API.portionsPerMonth.pending, handlePending)
       .addCase(API.portionsPerMonth.fulfilled, (state, action) => {
-
-
-        state.waterMounthList = action.payload.data.mounthData;
-
+        state.waterMonthList = action.payload.data.monthData ?? [];
       })
-      .addCase(API.portionsPerMonth.rejected, handleRejected);
+      .addCase(API.portionsPerMonth.rejected, handleRejected)
+      .addCase(API.updateWaterRate.pending, handlePending)
+      .addCase(API.updateWaterRate.fulfilled, (state, { payload }) => {
+        console.log(payload);
+        state.user = { ...state.user, ...payload };
+        state.isLoading = false;
+      })
+      .addCase(API.updateWaterRate.rejected, handleRejected);
   },
 });
 

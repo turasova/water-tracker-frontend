@@ -1,7 +1,11 @@
 import { format, addMonths, isBefore, isAfter } from 'date-fns';
-import { NextSvg, Paginator, PrevSvg } from './DatePaginator.styled';
+import { NextSvg, Paginator, PaginatorBtn, PrevSvg } from './DatePaginator.styled';
+// import useAuth from '../../../hooks/useAuth';
 
-const DatePaginator = ({ selectedDate, setSelectedDate, setCurrentMonth }) => {
+const DatePaginator = ({ selectedDate, setSelectedDate, setCurrentMonth, setSelectedDay }) => {
+  // const [createdAt] = useAuth().createdAt;
+  // const createUserMonth = createdAt.getMonth();
+  // console.log(createdAt);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
@@ -14,23 +18,26 @@ const DatePaginator = ({ selectedDate, setSelectedDate, setCurrentMonth }) => {
 
   const handlePrevClick = () => {
     setSelectedDate(addMonths(selectedDate, -1));
+
+    setSelectedDay(null);
     setCurrentMonth((currentMonth) => currentMonth - 1);
   };
 
   const handleNextClick = () => {
     setSelectedDate(addMonths(selectedDate, 1));
+    setSelectedDay(null);
     setCurrentMonth((currentMonth) => currentMonth + 1);
   };
 
   return (
     <Paginator>
-      <button onClick={handlePrevClick} disabled={isPrevDisabled}>
-        <PrevSvg disabled={isPrevDisabled} />
-      </button>
+      <PaginatorBtn onClick={handlePrevClick} disabled={isPrevDisabled}>
+        <PrevSvg />
+      </PaginatorBtn>
       <span>{`${monthName}, ${year}`}</span>
-      <button onClick={handleNextClick} disabled={isNextDisabled}>
-        <NextSvg disabled={isNextDisabled} />
-      </button>
+      <PaginatorBtn onClick={handleNextClick} disabled={isNextDisabled}>
+        <NextSvg />
+      </PaginatorBtn>
     </Paginator>
   );
 };

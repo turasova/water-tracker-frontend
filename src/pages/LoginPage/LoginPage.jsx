@@ -22,21 +22,22 @@ import * as Yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { signIn } from '../../redux/auth/operations';
 import { FcGoogle } from 'react-icons/fc';
+import { useContext } from 'react';
+import { ModalContext } from '../../context/ModalContext/ModalContext';
+import ModalUser from './ModalUser/ModalUser';
 
 const LoginPage = () => {
   const { handleShowPassword, toggleIcon, type } = useVisiblePassword();
   const bottle = bottleImg;
   const dispatch = useDispatch();
+  const { openModal } = useContext(ModalContext);
+  const handleLogInWithPopUp = () => {
+    window.location.assign('https://smart-foxes-backend-watertracker.onrender.com/api/auth/google');
+  };
 
   // const handleLogInWithPopUp = () => {
-  //     window.location.assign(
-  //         'https://smart-foxes-backend-watertracker.onrender.com/api/auth/google'
-  //     );
+  //   window.location.assign('http://localhost:3000/api/auth/google');
   // };
-
-  const handleLogInWithPopUp = () => {
-    window.location.assign('http://localhost:3000/api/auth/google');
-  };
 
   const SigninSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email').required('Email is required'),
@@ -54,6 +55,11 @@ const LoginPage = () => {
     validationSchema: SigninSchema,
     onSubmit: ({ email, password }, { resetForm }) => {
       dispatch(signIn({ email: email, password: password }));
+      openModal(
+        <>
+          <ModalUser />
+        </>
+      );
       resetForm();
     },
   });
